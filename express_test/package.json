@@ -1,0 +1,28 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "test_file",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raflisboa/curso_nodejs.git"
+  },
+  "keywords": [
+    "nodejs"
+  ],
+  "author": "Rafael Lisboa",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/raflisboa/curso_nodejs/issues"
+  },
+  "homepage": "https://github.com/raflisboa/curso_nodejs#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-handlebars": "^5.3.2",
+    "handlebars": "^4.7.7",
+    "nodemon": "^2.0.7"
+  }
+}
