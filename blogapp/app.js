@@ -40,7 +40,7 @@ const flash = require("connect-flash")
     //handlebars
     app.engine('handlebars', handlebars({defaultLayout: 'main'}))
     app.set('view engine', 'handlebars');
-
+    
     //mongoose
     mongoose.Promise = global.Promise;
     mongoose.set('useUnifiedTopology', true);
