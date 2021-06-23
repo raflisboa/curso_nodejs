@@ -2,6 +2,6 @@
 #### I am Developer, Electronic Technician and System Analyst.
 ![I am Developer, Electronic Technician and System Analyst.](https://raflisboa.github.io/banner.png)
 
-This is my repository to projects that I'm involved - Current project: Node.js Course
+Repo for Node.js Course in https://www.youtube.com/watch?v=LLqq6FemMNQ&list=PLJ_KhUnlXUPtbtLwaxxUxHqvcNQndmI4B&index=2
 
 ![Profile views](https://gpvc.arturio.dev/raflisboa)  
