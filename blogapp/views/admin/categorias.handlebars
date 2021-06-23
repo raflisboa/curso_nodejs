@@ -7,11 +7,11 @@
         <div class="card-body">
         <h4>Nome => {{this.nome}}</h4>
         <small>Slug => {{this.slug}}</small><br>
-        <small>Data de Criação => {{date}}</small><br>
+        <small>Data de Criação => {{#formatDate date}}{{/formatDate}}</small><br>
         <a href="/admin/categorias/edit/{{_id}}"><button class="btn btn-success mt-3">Editar Categoria</button></a>
         <form action="/admin/categorias/deletar" method="POST">
             <input type="hidden" name="id" value="{{_id}}">
-            <button type="submit" class="btn btn-danger mt-3">Deletar</button>
+            <button type="submit" class="btn btn-danger mt-1">Deletar</button>
         </form>
         </div>
         </div>

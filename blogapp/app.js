@@ -8,6 +8,16 @@ const path = require("path")
 const mongoose = require("mongoose")
 const session = require("express-session")
 const flash = require("connect-flash")
+require("./models/Postagem")
+const Postagem = mongoose.model("postagens")
+require("./models/Categoria")
+const Categoria = mongoose.model("categorias")
+const moment = require('moment')
+const usuarios = require("./routes/usuario")
+mongoose.set('useCreateIndex', true)
+const passport = require("passport")
+require("./config/auth")(passport)
+
 //config
     //Session
     app.use(session({
@@ -15,14 +25,18 @@ const flash = require("connect-flash")
         resave: true,
         saveUninitialized: true
     }))
+    app.use(passport.initialize())
+    app.use(passport.session())
     app.use(flash())
 
     //Middleware
-    app.use((req, res, next) => {
+    app.use((req, res, next)=>{
         res.locals.success_msg = req.flash('success_msg')
         res.locals.error_msg = req.flash('error_msg')
+        res.locals.error = req.flash('error')
+        res.locals.user = req.user || null
         next()
-    })
+      })
 
      //Public
     app.use(express.static(path.join(__dirname,"public")))
@@ -38,8 +52,18 @@ const flash = require("connect-flash")
     app.use(bodyParser.json())
 
     //handlebars
-    app.engine('handlebars', handlebars({defaultLayout: 'main'}))
+    // app.engine('handlebars', handlebars({defaultLayout: 'main'}))
+    app.engine('handlebars', handlebars({
+        defaultLayout: 'main',
+        helpers: {
+            formatDate: (date) => {
+                return moment(date).format('DD/MM/YYYY')
+            }
+        }
+    }))
     app.set('view engine', 'handlebars');
+
+
     
     //mongoose
     mongoose.Promise = global.Promise;
@@ -51,8 +75,62 @@ const flash = require("connect-flash")
     })
 
 //routes
-    app.get('/', (req, res) => {
-        res.send('Main Route')
+app.get("/", function(req, res){
+
+    Postagem.find().populate("categoria").sort({data: 'desc'}).then(function(postagens){
+        res.render("index", {postagens: postagens.map((postagem) => postagem.toJSON())});
+    }).catch((err) => {
+            req.flash("error_msg", "Houve um erro interno")
+            res.redirect("/404")
+        })
+    })
+
+    app.get("/postagem/:slug", (req, res) => {
+        // Postagem.findOne({slug: req.params.slug}).lean().populate("categoria").then((postagem) =>{
+        Postagem.findOne({slug: req.params.slug}).lean().populate("categoria").then((postagem) =>{
+            if(postagem){
+                res.render("postagem/index", {postagem: postagem})
+            }else{
+                req.flash("error_msg", "Postagem não existe")
+                res.redirect("/")
+            }
+        }).catch((err) => {
+            req.flash("error_msg", "Houve um erro interno")
+            res.redirect("/")
+        })
+    })
+
+    app.get("/categorias", (req, res) => {
+        Categoria.find().lean().then((categorias) => {
+            // res.render("categorias/index", {categorias: categorias.map(Categoria=> Categoria.toJSON())})
+            res.render("categorias/index", {categorias: categorias})
+        }).catch((err)=> {
+            req.flash("error_msg", "Houve um erro  "+err)
+            res.redirect("/")
+        })
+    })
+
+    app.get("/categorias/:slug", (req, res) => {
+        Categoria.findOne({slug: req.params.slug}).lean().then((categorias) => {
+            if(categorias){
+                Postagem.find({categoria: categorias._id}).lean().then((postagens) =>{
+                    res.render("categorias/postagens", {postagens: postagens, categorias: categorias})
+                }).catch((err)=> {
+                    req.flash("error_msg", "Houve um erro  "+err)
+                    res.redirect("/")
+                })
+            }else{
+                res.flash("error_msg", "Categoria Inexistente  "+err)
+                res.redirect("/")
+            }
+        }).catch((err) =>{
+            req.flash("error_msg", "Erro ao carregar categoria  "+err)
+            res.redirect("/")
+        })
+    })
+
+    app.get("/404", (req, res) =>{
+        res.send('Erro 404!')
     })
 
     app.get('/posts', (req, res) => {
@@ -60,9 +138,10 @@ const flash = require("connect-flash")
     })
 
     app.use('/admin', admin)
-
+    app.use('/usuarios', usuarios)
+  
 //misc
-const PORT = 8081;
+const PORT = process.env.PORT || 8081;
 app.listen(PORT, () => {
     console.log("Servidor rodando na url http://localhost:8081")
 })

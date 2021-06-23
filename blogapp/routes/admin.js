@@ -5,13 +5,18 @@ require("../models/Categoria")
 const Categoria = mongoose.model("categorias")
 require("../models/Postagem")
 const Postagem = mongoose.model("postagens")
+const {eAdmin} = require("../helpers/eAdmin")
 
-router.get('/', (req, res) => {
+router.get('/', eAdmin, (req, res) => {
     // res.send('Hello World! - Main Page')
     res.render("admin/index")
 })
 
-router.get("/categorias",(req,res)=>{
+router.get('/posts', eAdmin, (req, res) => {
+    res.send("Página de posts")
+})
+
+router.get("/categorias", eAdmin,(req,res)=>{
     Categoria.find().sort({date:"desc"}).then((categorias)=>{
         res.render("admin/categorias", {categorias:categorias.map(categorias => categorias.toJSON())})
     }).catch((err)=>{
@@ -20,11 +25,11 @@ router.get("/categorias",(req,res)=>{
     })
 })
 
-router.get('/categorias/add', (req, res) => {
+router.get('/categorias/add', eAdmin,(req, res) => {
     res.render("admin/addcategorias")
 })
 
-router.post("/categorias/nova", (req, res) => {
+router.post("/categorias/nova", eAdmin,(req, res) => {
     //validação de erros
     var erros = []
 
@@ -60,7 +65,7 @@ router.post("/categorias/nova", (req, res) => {
     }
 })
 
-router.get("/categorias/edit/:id", (req, res) => {
+router.get("/categorias/edit/:id", eAdmin,(req, res) => {
     Categoria.findOne({_id:req.params.id}).then((categoria) => {
         res.render("./admin/editcategorias",  {categoria:categoria.toJSON()})
     }).catch((err) => {
@@ -69,8 +74,8 @@ router.get("/categorias/edit/:id", (req, res) => {
     })
 })
 
-router.post("/categorias/edit", (req, res) => {
-    Categoria.findOne({_id:req.body.id}).lean().then((categoria) => {
+router.post("/categorias/edit/", eAdmin,(req, res) => {
+    Categoria.findOne({_id:req.body.id}).populate("categoria").lean().then((categoria) => {
     //validação de erros
         var erros = []
     if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null){
@@ -88,11 +93,12 @@ router.post("/categorias/edit", (req, res) => {
         categoria.nome = req.body.nome
         categoria.slug = req.body.slug
     }
+        // const postCategoria = new Categoria(categoria);
         categoria.save().then(() => {
             req.flash("success_msg", "Categoria editada com sucesso!")
             res.redirect("/admin/categorias")
         }).catch((err) => {
-            req.flash("error_msg", "Save Error. Tipo de erro -->> "+err)
+            req.flash("error_msg", "Erro ao Salvar categoria. Tipo de erro -->> "+err)
             res.redirect("/admin/categorias")
         })
 
@@ -102,7 +108,7 @@ router.post("/categorias/edit", (req, res) => {
     })
 })
 
-    router.post("/categorias/deletar", (req, res) => {
+    router.post("/categorias/deletar", eAdmin,(req, res) => {
         Categoria.deleteOne({_id: req.body.id}).then(() => {
             req.flash("success_msg", "Categoria deletada com sucesso!")
             res.redirect("/admin/categorias")
@@ -112,7 +118,7 @@ router.post("/categorias/edit", (req, res) => {
         })
     })
 
-    router.get("/postagens", (req, res) => {
+    router.get("/postagens", eAdmin,(req, res) => {
 
         Postagem.find().populate("categoria").sort({data:"desc"}).lean().then((postagens) =>{
             res.render("admin/postagens", {postagens: postagens})
@@ -123,13 +129,13 @@ router.post("/categorias/edit", (req, res) => {
         })    
     })
 
-    router.get("/postagens/add", (req, res) => {
+    router.get("/postagens/add", eAdmin,(req, res) => {
         Categoria.find().sort({nome: 'asc'}).lean(true).then((categorias)=>{
             res.render('admin/addpostagem', {categorias: categorias})
         })
     })
 
-    router.post("/postagens/nova", (req, res) => {
+    router.post("/postagens/nova", eAdmin,(req, res) => {
         //validação de erros
         var erros = []
 
@@ -174,7 +180,7 @@ router.post("/categorias/edit", (req, res) => {
 //     })
 // })
 
-router.get("/postagens/edit/:id", (req, res) => {
+router.get("/postagens/edit/:id", eAdmin,(req, res) => {
 Postagem.findOne({_id: req.params.id}).populate("categoria").then((postagem) => {
     Categoria.find({_id: {$ne: postagem.categoria._id}}).lean().sort({nome: 'asc'}).then((categorias) => {
         res.render('admin/editPostagens', {postagem: postagem.toJSON(), categorias: categorias})
@@ -183,6 +189,16 @@ Postagem.findOne({_id: req.params.id}).populate("categoria").then((postagem) => 
                 req.flash("error_msg", "Houve um erro ao editar a categoria!")
                 res.redirect("/admin/postagens")
             })
+})
+
+router.get("/postagens/deletar/:id", eAdmin,(req, res) => {
+    Postagem.deleteOne({_id: req.params.id}).then(() =>{
+        req.flash("success_msg", "Postagem deletada com sucesso!")
+        res.redirect("/admin/postagens")
+    }).catch((err)=>{
+        req.flash("error_msg", "Houve um erro ao deletar a postagem!")
+        res.redirect("/admin/postagens")
+    })
 })
 
 // router.listen(port, () => 
