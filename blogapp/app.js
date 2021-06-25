@@ -63,14 +63,16 @@ const session = require('cookie-session')
     }))
     app.set('view engine', 'handlebars');
     
+    const uri = process.env.MONGODB_URI;
     // mongoose
     // console.log('link de conexão: ' + db.mongoURI')
-    mongoose.Promise = global.Promise;
-    mongoose.set('useUnifiedTopology', true);
+    mongoose.Promise = global.Promise
+    mongoose.set('useUnifiedTopology', true)
     mongoose.connect(db.mongoURI,{useNewUrlParser: true}).then(() => {
-        console.log("MongoDB Up")
+    // mongoose.connect(process.env.MONGODB_URI,{useNewUrlParser: true}).then(() => {
+        console.log("MongoDB Up -> "+ db.mongoURI)
     }).catch((err) => {
-        console.log("Erro - Server Down"+err)
+        console.log("Erro durante a conexão ao BD Mongoose -> "+err+ db.mongoURI)
     })
 
 // Public
@@ -78,9 +80,9 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 //routes
 
-app.get("/",(req, res)=>{
-     res.render("")
-    })
+// app.get("/",(req, res)=>{
+//      res.render("")
+//     })
 
 app.get("/", function(req, res){
     Postagem.find().populate("categoria").sort({data: 'desc'}).then(function(postagens){
