@@ -1,21 +1,29 @@
 {
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "body-parser": "*",
     "connect-flash": "^0.1.1",
+    "cookie-session": "^1.4.0",
+    "dotenv": "^10.0.0",
+    "express": "*",
     "express-handlebars": "^5.3.2",
     "express-session": "^1.17.2",
     "handlebars": "^4.5.3",
     "moment": "^2.29.1",
+    "mongoose": "^5.12.14",
     "passport": "^0.4.1",
     "passport-local": "^1.0.0"
   },
   "name": "blogapp",
   "version": "1.0.0",
   "main": "app.js",
+  "engines": {
+    "node": "14.x"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js"
+    "start": "node app.js"
   },
   "keywords": [],
   "author": "",

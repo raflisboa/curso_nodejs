@@ -6,7 +6,7 @@ const app = express();
 const admin = require("./routes/admin")
 const path = require("path")
 const mongoose = require("mongoose")
-const session = require("express-session")
+// const session = require("express-session")
 const flash = require("connect-flash")
 require("./models/Postagem")
 const Postagem = mongoose.model("postagens")
@@ -17,6 +17,9 @@ const usuarios = require("./routes/usuario")
 mongoose.set('useCreateIndex', true)
 const passport = require("passport")
 require("./config/auth")(passport)
+const db = require("./config/db")
+require("dotenv").config();
+const session = require('cookie-session')
 
 //config
     //Session
@@ -37,9 +40,6 @@ require("./config/auth")(passport)
         res.locals.user = req.user || null
         next()
       })
-
-     //Public
-    app.use(express.static(path.join(__dirname,"public")))
 
     // app.use((req, res,next ) => {
     //     console.log("Middleware up")
@@ -62,21 +62,27 @@ require("./config/auth")(passport)
         }
     }))
     app.set('view engine', 'handlebars');
-
-
     
-    //mongoose
+    // mongoose
+    // console.log('link de conexão: ' + db.mongoURI')
     mongoose.Promise = global.Promise;
     mongoose.set('useUnifiedTopology', true);
-    mongoose.connect("mongodb://localhost/blogapp",{ useNewUrlParser: true }).then(() => {
+    mongoose.connect(db.mongoURI,{useNewUrlParser: true}).then(() => {
         console.log("MongoDB Up")
     }).catch((err) => {
         console.log("Erro - Server Down"+err)
     })
 
-//routes
-app.get("/", function(req, res){
+// Public
+app.use(express.static(path.join(__dirname, 'public')))
 
+//routes
+
+app.get("/",(req, res)=>{
+     res.render("")
+    })
+
+app.get("/", function(req, res){
     Postagem.find().populate("categoria").sort({data: 'desc'}).then(function(postagens){
         res.render("index", {postagens: postagens.map((postagem) => postagem.toJSON())});
     }).catch((err) => {
@@ -111,10 +117,10 @@ app.get("/", function(req, res){
     })
 
     app.get("/categorias/:slug", (req, res) => {
-        Categoria.findOne({slug: req.params.slug}).lean().then((categorias) => {
-            if(categorias){
-                Postagem.find({categoria: categorias._id}).lean().then((postagens) =>{
-                    res.render("categorias/postagens", {postagens: postagens, categorias: categorias})
+        Categoria.findOne({slug: req.params.slug}).lean().then((categoria) => {
+            if(categoria){
+                Postagem.find({categoria: categoria._id}).lean().then((postagens) =>{
+                    res.render("categorias/postagens", {postagens: postagens, categoria: categoria})
                 }).catch((err)=> {
                     req.flash("error_msg", "Houve um erro  "+err)
                     res.redirect("/")

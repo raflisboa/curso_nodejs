@@ -92,8 +92,7 @@ router.post("/categorias/edit/", eAdmin,(req, res) => {
     }else{
         categoria.nome = req.body.nome
         categoria.slug = req.body.slug
-    }
-        // const postCategoria = new Categoria(categoria);
+            // const postCategoria = new Categoria(categoria);
         categoria.save().then(() => {
             req.flash("success_msg", "Categoria editada com sucesso!")
             res.redirect("/admin/categorias")
@@ -101,7 +100,7 @@ router.post("/categorias/edit/", eAdmin,(req, res) => {
             req.flash("error_msg", "Erro ao Salvar categoria. Tipo de erro -->> "+err)
             res.redirect("/admin/categorias")
         })
-
+    }
     }).catch((err) => {
         req.flash("error_msg", "Erro em editar Categoria. Tipo de erro -->> "+err)
         res.redirect("/admin/categorias")
@@ -119,7 +118,6 @@ router.post("/categorias/edit/", eAdmin,(req, res) => {
     })
 
     router.get("/postagens", eAdmin,(req, res) => {
-
         Postagem.find().populate("categoria").sort({data:"desc"}).lean().then((postagens) =>{
             res.render("admin/postagens", {postagens: postagens})
         // res.render("admin/postagens")
@@ -132,7 +130,10 @@ router.post("/categorias/edit/", eAdmin,(req, res) => {
     router.get("/postagens/add", eAdmin,(req, res) => {
         Categoria.find().sort({nome: 'asc'}).lean(true).then((categorias)=>{
             res.render('admin/addpostagem', {categorias: categorias})
-        })
+        }).catch((err)=>{
+            req.flash('error_msg', "Houve um erro ao carregar o formulário  Tipo de erro -->> "+err)
+            res.redirect('/admin')
+          })
     })
 
     router.post("/postagens/nova", eAdmin,(req, res) => {
